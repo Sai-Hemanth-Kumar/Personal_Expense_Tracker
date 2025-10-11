@@ -70,6 +70,52 @@ def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
+    page = int(request.args.get('page', 1))
+    per_page = 5
+    offset = (page - 1) * per_page
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Count total rows
+    cursor.execute("SELECT COUNT(*) as count FROM expenses WHERE user_id=%s", (session['user_id'],))
+    total_count = cursor.fetchone()['count']
+
+    # Descending order, pagination applied
+    cursor.execute(
+        "SELECT * FROM expenses WHERE user_id=%s ORDER BY date DESC LIMIT %s OFFSET %s",
+        (session['user_id'], per_page, offset)
+    )
+    expenses = cursor.fetchall()
+
+    # Fetch user info for greeting
+    cursor.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
+    user = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    # Pad the expenses list to always have 5 rows
+    for _ in range(per_page - len(expenses)):
+        expenses.append({'title': '', 'amount': '', 'category': '', 'date': ''})
+
+    total = sum([float(exp['amount']) for exp in expenses if exp['amount'] != ''])
+    total_pages = (total_count + per_page - 1) // per_page
+    
+    return render_template(
+        'dashboard.html',
+        expenses=expenses,
+        total_expense=total,
+        user=user,
+        page=page,
+        total_pages=total_pages
+    )
+'''
+@app.route('/dashboard')
+def dashboard():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -86,6 +132,7 @@ def dashboard():
     
     total = sum([float(exp['amount']) for exp in expenses])
     return render_template('dashboard.html', expenses=expenses, total=total, user=user)
+'''
 
 # ➕ Add Expense
 @app.route('/add_expense', methods=['GET', 'POST'])
@@ -165,7 +212,7 @@ def update_profile():
     cursor.close()
     conn.close()
     return render_template('update_profile.html', user=user)
-    
+
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     if 'user_id' not in session:

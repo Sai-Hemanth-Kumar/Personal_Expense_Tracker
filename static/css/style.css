@@ -91,3 +91,16 @@ nav a {
   width: 100%;
   bottom: 0;
 }
+
+#expenseTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 18px;
+}
+#expenseTable th, #expenseTable td {
+  border: 1px solid #aaa;
+  padding: 8px;
+}
+#expenseTable th {
+  background: #f6f6f6;
+}

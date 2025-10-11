@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <h2>{{ user.name }}'s Dashboard</h2>
-<p>Total Expense: ₹{{ total_expense }}</p>
+<p>Page Expense: ₹{{ total_expense }}</p>
 
 <div class="search-bar">
   <input type="text" id="searchInput" placeholder="Search by title, category, or amount...">
@@ -17,17 +17,30 @@
     </tr>
   </thead>
   <tbody>
-    {% for expense in expenses %}
-    <tr>
-      <td>{{ expense.title }}</td>
-      <td>{{ expense.amount }}</td>
-      <td>{{ expense.category }}</td>
-      <td>{{ expense.date }}</td>
-    </tr>
-    {% endfor %}
+    {% if expenses|length == 0 %}
+      <tr>
+        <td colspan="4" style="text-align: center; color: #888;">No Data</td>
+      </tr>
+    {% else %}
+      {% for expense in expenses %}
+      <tr>
+        <td>{{ expense.title }}</td>
+        <td>{{ expense.amount }}</td>
+        <td>{{ expense.category }}</td>
+        <td>{{ expense.date }}</td>
+      </tr>
+      {% endfor %}
+    {% endif %}
   </tbody>
 </table>
 
-<div id="pagination"></div>
-
+<div style="margin-top: 24px; text-align: center;">
+  {% if page > 1 %}
+    <a href="{{ url_for('dashboard', page=page-1) }}">Previous</a>
+  {% endif %}
+  <span>Page {{ page }} of {{ total_pages }}</span>
+  {% if page < total_pages %}
+    <a href="{{ url_for('dashboard', page=page+1) }}">Next</a>
+  {% endif %}
+</div>
 {% endblock %}
