@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ user.name }}'s Dashboard</h2>
+<p>Total Expense: ₹{{ total_expense }}</p>
+
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="Search by title, category, or amount...">
+</div>
+
+<table id="expenseTable">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Amount</th>
+      <th>Category</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for expense in expenses %}
+    <tr>
+      <td>{{ expense.title }}</td>
+      <td>{{ expense.amount }}</td>
+      <td>{{ expense.category }}</td>
+      <td>{{ expense.date }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div id="pagination"></div>
+
+{% endblock %}

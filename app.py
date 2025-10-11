@@ -1,0 +1,114 @@
+from flask import Flask, render_template, request, redirect, session, url_for, flash
+from flask_bcrypt import Bcrypt
+from config import get_connection
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = 'your_secret_key'
+bcrypt = Bcrypt(app)
+
+# 🏠 Home Page
+@app.route('/')
+def home():
+    return render_template('home.html')
+
+# 🧍 Register
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
+
+        conn = get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", (name, email, password))
+            conn.commit()
+            flash("Registration successful! Please log in.")
+            return redirect(url_for('login'))
+        except:
+            flash("Email already exists.")
+        finally:
+            cursor.close()
+            conn.close()
+    return render_template('register.html')
+
+# 🔐 Login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if user and bcrypt.check_password_hash(user['password'], password):
+            session['user_id'] = user['id']
+            session['user_name'] = user['name']
+            return redirect(url_for('dashboard'))
+        else:
+            flash("Invalid email or password.")
+    return render_template('login.html')
+
+# 🚪 Logout
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash("Logged out successfully.")
+    return redirect(url_for('home'))
+
+# 📊 Dashboard
+@app.route('/dashboard')
+def dashboard():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM expenses WHERE user_id=%s", (session['user_id'],))
+    expenses = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    total = sum([float(exp['amount']) for exp in expenses])
+    return render_template('dashboard.html', expenses=expenses, total=total)
+
+# ➕ Add Expense
+@app.route('/add_expense', methods=['GET', 'POST'])
+def add_expense():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        title = request.form['title']
+        amount = request.form['amount']
+        category = request.form['category']
+        date = datetime.strptime(request.form['date'], '%Y-%m-%d')
+
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO expenses (user_id, title, amount, category, date) VALUES (%s, %s, %s, %s, %s)",
+                       (session['user_id'], title, amount, category, date))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        flash("Expense added successfully!")
+        return redirect(url_for('dashboard'))
+    return render_template('add_expense.html')
+
+# 👤 Profile
+@app.route('/profile')
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('profile.html', name=session['user_name'])
+
+if __name__ == '__main__':
+    app.run(debug=True)
