@@ -51,6 +51,7 @@ def login():
         if user and bcrypt.check_password_hash(user['password'], password):
             session['user_id'] = user['id']
             session['user_name'] = user['name']
+            flash("Logged-In Successfully.")
             return redirect(url_for('dashboard'))
         else:
             flash("Invalid email or password.")
@@ -60,7 +61,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    flash("Logged out successfully.")
+    flash("Logged-out successfully.")
     return redirect(url_for('home'))
 
 # 📊 Dashboard
@@ -127,6 +128,57 @@ def profile():
     conn.close()
     
     return render_template('profile.html', user=user, total_expense=total_expense)
+
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_new_password = request.form['confirm_new_password']
+
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT password FROM users WHERE id=%s", (session['user_id'],))
+        user = cursor.fetchone()
+
+        if not user or not bcrypt.check_password_hash(user['password'], current_password):
+            flash("Current password is incorrect.")
+            cursor.close()
+            conn.close()
+            return redirect(url_for('change_password'))
+
+        if new_password != confirm_new_password:
+            flash("New passwords do not match.")
+            cursor.close()
+            conn.close()
+            return redirect(url_for('change_password'))
+
+        hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+        cursor.execute("UPDATE users SET password=%s WHERE id=%s", (hashed_password, session['user_id']))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        # Clear session and redirect to login after password change
+        session.clear()
+        flash("Password updated successfully! Please log in again.")
+        return redirect(url_for('login'))
+
+    return render_template('change_password.html')
+
+'''
+@app.route('/change_password', methods=['POST'])
+def change_password():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    # Process password change logic here...
+    # e.g. read form fields, validate, update DB, flash messages
+    flash("Password change functionality not implemented yet.")
+    return redirect(url_for('profile'))
+'''
 
 if __name__ == '__main__':
     app.run(debug=True)
