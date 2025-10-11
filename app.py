@@ -129,6 +129,43 @@ def profile():
     
     return render_template('profile.html', user=user, total_expense=total_expense)
 
+@app.route('/update_profile', methods=['GET', 'POST'])
+def update_profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
+    user = cursor.fetchone()
+
+    if request.method == 'POST':
+        new_name = request.form['new_name']
+        password = request.form['password']
+
+        # Check if current password matches
+        if not user or not bcrypt.check_password_hash(user['password'], password):
+            flash("Password is incorrect.")
+            cursor.close()
+            conn.close()
+            return redirect(url_for('update_profile'))
+
+        # Update profile name
+        cursor.execute("UPDATE users SET name=%s WHERE id=%s", (new_name, session['user_id']))
+        conn.commit()
+
+        # Update session display name
+        session['user_name'] = new_name
+
+        flash("Profile updated successfully.")
+        cursor.close()
+        conn.close()
+        return redirect(url_for('profile'))
+
+    cursor.close()
+    conn.close()
+    return render_template('update_profile.html', user=user)
+    
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     if 'user_id' not in session:
