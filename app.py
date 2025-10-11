@@ -95,10 +95,6 @@ def dashboard():
     cursor.close()
     conn.close()
 
-    # Pad the expenses list to always have 5 rows
-    #for _ in range(per_page - len(expenses)):
-        #expenses.append({'title': '', 'amount': '', 'category': '', 'date': ''})
-
     total = sum([float(exp['amount']) for exp in expenses if exp['amount'] != ''])
     total_pages = max(1, (total_count + per_page - 1) // per_page)
     
@@ -110,29 +106,6 @@ def dashboard():
         page=page,
         total_pages=total_pages
     )
-'''
-@app.route('/dashboard')
-def dashboard():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    # Fetch expenses for the user
-    cursor.execute("SELECT * FROM expenses WHERE user_id=%s", (session['user_id'],))
-    expenses = cursor.fetchall()
-
-    # Fetch user info for greeting
-    cursor.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
-    user = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
-    
-    total = sum([float(exp['amount']) for exp in expenses])
-    return render_template('dashboard.html', expenses=expenses, total=total, user=user)
-'''
 
 # ➕ Add Expense
 @app.route('/add_expense', methods=['GET', 'POST'])
@@ -252,17 +225,6 @@ def change_password():
         return redirect(url_for('login'))
 
     return render_template('change_password.html')
-
-'''
-@app.route('/change_password', methods=['POST'])
-def change_password():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    # Process password change logic here...
-    # e.g. read form fields, validate, update DB, flash messages
-    flash("Password change functionality not implemented yet.")
-    return redirect(url_for('profile'))
-'''
 
 if __name__ == '__main__':
     app.run(debug=True)
