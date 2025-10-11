@@ -96,8 +96,8 @@ def dashboard():
     conn.close()
 
     # Pad the expenses list to always have 5 rows
-    for _ in range(per_page - len(expenses)):
-        expenses.append({'title': '', 'amount': '', 'category': '', 'date': ''})
+    #for _ in range(per_page - len(expenses)):
+        #expenses.append({'title': '', 'amount': '', 'category': '', 'date': ''})
 
     total = sum([float(exp['amount']) for exp in expenses if exp['amount'] != ''])
     total_pages = (total_count + per_page - 1) // per_page

@@ -19,7 +19,10 @@
   <tbody>
     {% if expenses|length == 0 %}
       <tr>
-        <td colspan="4" style="text-align: center; color: #888;">No Data</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
       </tr>
     {% else %}
       {% for expense in expenses %}
@@ -36,7 +39,7 @@
 
 <div style="margin-top: 24px; text-align: center;">
   {% if page > 1 %}
-    <a href="{{ url_for('dashboard', page=page-1) }}">Previous</a>
+    <a href="{{ url_for('dashboard', page=page-1) }}">Prev</a>
   {% endif %}
   <span>Page {{ page }} of {{ total_pages }}</span>
   {% if page < total_pages %}
