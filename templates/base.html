@@ -10,6 +10,19 @@
 <body>
 
   <!-- ===== NAVBAR ===== -->
+  <nav>
+    {% if session.user_id %}
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('add_expense') }}">Add Expense</a>
+      <a href="{{ url_for('profile') }}">Profile</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    {% else %}
+      <a href="{{ url_for('home') }}">Home</a>
+      <a href="{{ url_for('login') }}">Login</a>
+      <a href="{{ url_for('register') }}">Register</a>
+    {% endif %}
+    </nav>
+  <!-- 
   <nav class="navbar">
     <div class="container">
       <a href="{{ url_for('home') }}" class="logo">Expense Tracker</a>
@@ -27,6 +40,7 @@
       </ul>
     </div>
   </nav>
+-->
 
   <!-- ===== FLASH MESSAGES ===== -->
   {% with messages = get_flashed_messages(with_categories=true) %}
