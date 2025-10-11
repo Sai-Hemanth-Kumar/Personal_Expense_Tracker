@@ -1,0 +1,1 @@
+This is a project built on Python flask with MySql Database.
