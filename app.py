@@ -100,7 +100,7 @@ def dashboard():
         #expenses.append({'title': '', 'amount': '', 'category': '', 'date': ''})
 
     total = sum([float(exp['amount']) for exp in expenses if exp['amount'] != ''])
-    total_pages = (total_count + per_page - 1) // per_page
+    total_pages = max(1, (total_count + per_page - 1) // per_page)
     
     return render_template(
         'dashboard.html',

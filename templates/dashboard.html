@@ -39,11 +39,18 @@
 
 <div style="margin-top: 24px; text-align: center;">
   {% if page > 1 %}
-    <a href="{{ url_for('dashboard', page=page-1) }}">Prev</a>
+    <form method="get" action="{{ url_for('dashboard') }}" style="display:inline;">
+      <input name="page" type="hidden" value="{{ page-1 }}">
+      <button type="submit" style="padding:7px 14px; border-radius:5px; border:1px solid #aaa;">Prev</button>
+    </form>
   {% endif %}
-  <span>Page {{ page }} of {{ total_pages }}</span>
+  <span style="margin:0 14px;">Page {{ page }} of {{ total_pages }}</span>
   {% if page < total_pages %}
-    <a href="{{ url_for('dashboard', page=page+1) }}">Next</a>
+    <form method="get" action="{{ url_for('dashboard') }}" style="display:inline;">
+      <input name="page" type="hidden" value="{{ page+1 }}">
+      <button type="submit" style="padding:7px 14px; border-radius:5px; border:1px solid #aaa;">Next</button>
+    </form>
   {% endif %}
 </div>
+
 {% endblock %}
