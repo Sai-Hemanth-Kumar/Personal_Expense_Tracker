@@ -71,13 +71,20 @@ def dashboard():
     
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
+
+    # Fetch expenses for the user
     cursor.execute("SELECT * FROM expenses WHERE user_id=%s", (session['user_id'],))
     expenses = cursor.fetchall()
+
+    # Fetch user info for greeting
+    cursor.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
+    user = cursor.fetchone()
+
     cursor.close()
     conn.close()
     
     total = sum([float(exp['amount']) for exp in expenses])
-    return render_template('dashboard.html', expenses=expenses, total=total)
+    return render_template('dashboard.html', expenses=expenses, total=total, user=user)
 
 # ➕ Add Expense
 @app.route('/add_expense', methods=['GET', 'POST'])
@@ -108,7 +115,18 @@ def add_expense():
 def profile():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    return render_template('profile.html', name=session['user_name'])
+    
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
+    user = cursor.fetchone()
+
+    cursor.execute("SELECT SUM(amount) as total_expense FROM expenses WHERE user_id=%s", (session['user_id'],))
+    total_expense = cursor.fetchone()['total_expense'] or 0
+    cursor.close()
+    conn.close()
+    
+    return render_template('profile.html', user=user, total_expense=total_expense)
 
 if __name__ == '__main__':
     app.run(debug=True)
