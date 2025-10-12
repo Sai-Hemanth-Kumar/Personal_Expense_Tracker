@@ -1,1 +1,1 @@
-This is a project built on Python flask with MySql Database.
+This is a simple project built on Python flask with MySql Database.
